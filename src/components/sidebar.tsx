@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  BarChart2,
+  BookOpenText,
   CalendarDays,
   DollarSign,
   UserIcon,
@@ -13,6 +13,7 @@ import {
 
 const categories = [
   { name: "Events", icon: CalendarDays, href: "/events" },
+  { name: "Will", icon: BookOpenText, href: "/will" },
   { name: "Assets", icon: DollarSign, href: "/assets" },
   { name: "Profile", icon: UserIcon, href: "/profile" },
 ];
