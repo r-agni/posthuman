@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import {
   Newspaper,
   Film,
@@ -15,6 +16,7 @@ import {
   ChevronUp,
   X,
 } from "lucide-react";
+import { main as runScrapyInstance } from "ai-models/scrapybara/index";
 
 type Subscription = {
   id: string;
@@ -24,6 +26,16 @@ type Subscription = {
   login: string;
   password: string;
 };
+
+async function fetchScrapedData() {
+  try {
+    const res = await fetch("/api/scrapybara");
+    const { data } = await res.json();
+    console.log("Scrapybara output:", data);
+  } catch (error) {
+    console.error("Error fetching scraped data:", error);
+  }
+}
 
 const LOCAL_STORAGE_KEY = "subscriptionsData";
 
@@ -53,12 +65,11 @@ const SubscriptionItem = ({
 }) => (
   <Card className="mb-4 overflow-hidden relative">
     <Button
-      variant="ghost"
-      size="icon"
-      className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
+      variant="destructive"
+      className="absolute top-6 right-6 text-white"
       onClick={() => onCancel(subscription.id)}
     >
-      <X className="h-5 w-5" />
+      Cancel Subscription
     </Button>
 
     <CardContent className="p-0">
@@ -153,6 +164,12 @@ export default function SubscriptionPage() {
   };
 
   const handleCancel = (id: string) => {
+    const subscriptionToCancel = subscriptions.find((sub) => sub.id === id);
+
+    if (subscriptionToCancel && subscriptionToCancel.name === "CNN") {
+      fetchScrapedData();
+    }
+
     const updatedSubscriptions = subscriptions.filter((sub) => sub.id !== id);
     setSubscriptions(updatedSubscriptions);
     localStorage.setItem(
