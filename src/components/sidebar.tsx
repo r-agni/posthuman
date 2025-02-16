@@ -27,16 +27,18 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-6 flex flex-col h-screen">
-      <div className="flex items-center gap-2 mb-8">
-        <Image
-          src="/logo.png"
-          alt="Posthuman Logo"
-          width={32}
-          height={32}
-          className="h-8 w-8"
-        />
-        <span className="text-xl font-semibold">Posthuman</span>
-      </div>
+      <Link href="/">
+        <div className="flex items-center gap-2 mb-8">
+          <Image
+            src="/logo.png"
+            alt="Posthuman Logo"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
+          <span className="text-xl font-semibold">Posthuman</span>
+        </div>
+      </Link>
       <nav className="space-y-1 flex-grow">
         {categories.map((category) => (
           <Link
@@ -54,10 +56,6 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
-      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors text-red-600 hover:bg-red-50 mt-auto">
-        <LogOut className="h-4 w-4" />
-        Sign Out
-      </button>
     </aside>
   );
 }

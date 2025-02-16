@@ -1,5 +1,4 @@
 import { Sidebar } from "@/components/sidebar";
-import "./globals.css";
 
 export default function SecondaryLayout({
   children,
