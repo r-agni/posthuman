@@ -31,7 +31,7 @@ def classify_financial_data(extracted_text):
     {{
       "accounts": [
         {{
-          "type": "Stocks" | "Bank Account" | "Cryptocurrency" | "Bonds" | "Real Estate",
+          "type": "Stocks" | "Bank Account" | "Cryptocurrency" | "Bonds" | "Real Estate" | "Other",
           "institution": "Institution Name",
           "balance": 12345.67
         }}
