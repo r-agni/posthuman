@@ -1,146 +1,79 @@
-Digital Legacy AI Assistant 🌟
-Overview
-A cutting-edge digital estate management system leveraging AI and blockchain technology to help individuals organize, secure, and plan their digital legacy. This project focuses on secure, local-first architecture and transparent blockchain verification while prioritizing privacy and legal compliance.
-⚠️ Important Notice
-This software is for educational and research purposes only. Users must comply with all applicable laws and platform terms of service. Some features may have legal restrictions in certain jurisdictions.
-🌟 Core Features
-Local-First Architecture
+# Posthuman: Personal Family Interaction and Asset Management AI
 
-Private Memory Store
+Posthuman is an advanced AI-driven system designed to assist with personal family interactions, future event planning, digital asset management, and posthumous account execution. It leverages cutting-edge technologies and operates entirely on local storage to ensure data privacy and security.
 
-Elastic Vector Database implementation for personal data
-Secure local storage of all sensitive information
-Configurable memory pools for different relationship contexts
-Zero cloud dependency for sensitive data
+## Features
 
+### Personal Interaction and Memory Preservation
+- **Private and Public Memory Pools**: Integrates data from private and public memory sources for personalized interaction (e.g., friends/family memory pools).
+- **Family Interaction Chatbot**: Uses Mistral AI to enable meaningful conversations based on user-provided data.
+- **Future Event Messages**: Auto-generates and sends messages for important events using:
+  - **Deep Fake Video**: Personalized video creation.
+  - **AI Audio Recording**: Authentic voice replication using ElevenLabs.
+  - **Speech and Lip Synchronization**: Realistic animation using Luma for positioning and Muse Talk for lip-sync.
+- **Digital Memorialization**: Creates personalized video messages to memorialize an online presence for loved ones.
 
+### Data Sources
+All data and analysis are stored locally for enhanced privacy. Sources include:
+- Text messages, photos, and emails.
+- Cloud accounts and storage (e.g., Drive, personal cloud profiles).
+- Financial statements and password managers.
+- Cryptocurrency wallets and blockchain data.
 
-AI Analysis Engine
+---
 
-Mistral AI Integration
+## Asset Discovery and Management
+- **Digital Footprint Discovery**:
+  - Identifies digital assets, bank accounts, and subscriptions.
+  - Analyzes fiscal statements/returns using KNN with Mistral local models and OCR.
+- **Asset Delegation**:
+  - Stores key assets and accounts for delegation upon an inflection point (e.g., post-mortem event).
+  - Links with Ethereum wallets and manages digital portfolios validated via EigenLayer.
 
-Local model deployment for data analysis
-Pattern recognition in personal communications
-Contextual understanding of relationships
-Privacy-preserving inference
+---
 
+## Executor Assistance
+- **Automated Operations**:
+  - Cancels subscriptions and payments posthumously using AI Operator Agent Scrappybara with Mistral context inputs.
+  - Deletes accounts and profiles efficiently.
+- **Task Scheduling**:
+  - Cron jobs for post-mortem tasks.
+  - Live context tasks managed via Perplexity Sonar API.
 
+---
 
-Asset Discovery & Management
+## Blockchain Integration
+- **Tamper-Proof Execution**:
+  - Blockchain ledger maintained with EigenLayer AVS for transparent will execution.
+  - Human-agent conversation logs validate transactions.
+- **Encrypted Hashing**:
+  - AI agent ensures encrypted on-chain verification of critical tasks.
 
-Digital Footprint Analysis
+---
 
-Automated scanning of connected accounts
-Financial statement parsing and categorization
-Subscription tracking and management
-Cryptocurrency wallet integration
+## Technology Stack
+- **AI Models**:
+  - Mistral AI for interaction and context-based analysis.
+  - ElevenLabs for voice replication.
+  - Luma for video/image positioning.
+  - Muse Talk for lip synchronization.
+- **Databases**:
+  - Elastic Vector Database for storing local data.
+- **Blockchain**:
+  - Ethereum with EigenLayer for transaction validation and portfolio management.
+- **Automation**:
+  - Scrappybara for task automation.
+  - Perplexity Sonar API for real-time task execution.
 
+---
 
-Document Processing
+## Privacy and Security
+- **Local Data Storage**: All data and analysis are stored locally, ensuring no external access to sensitive information.
+- **Encrypted Blockchain**: Transactions and data are secured with encrypted hashes on-chain.
 
-OCR implementation for document digitization
-Automated categorization and tagging
-Metadata extraction and indexing
-Secure document storage
+---
 
-
-
-Blockchain Integration
-
-EigenLayer Implementation
-
-AVS (Actively Validated Service) setup
-Smart contract deployment guide
-Transaction verification system
-Proof-of-stake security model
-
-
-
-Executor Tools
-
-Automated Management
-
-Task scheduling system
-Account management automation
-Subscription handling
-Digital asset distribution
-
-
-
-🛠️ Technical Architecture
-Backend Stack
-Copy- Rust (Core Engine)
-- Python (AI Components)
-- Node.js (Blockchain Interface)
-- PostgreSQL (Relational Data)
-- Elasticsearch (Vector Store)
-AI Components
-Copy- Mistral AI (Core Language Model)
-- ElevenLabs API Integration
-- Luma Labs Integration
-- MuseTalk Implementation
-Blockchain Components
-Copy- Ethereum Smart Contracts
-- EigenLayer AVS
-- Web3.js Integration
-- Hardware Wallet Support
-📦 Installation
-Prerequisites
-bashCopy# System Requirements
-- CPU: 8+ cores recommended
-- RAM: 16GB minimum, 32GB recommended
-- Storage: 100GB+ SSD
-- GPU: Optional, improves AI performance
-
-# Required Software
-- Docker 20.10+
-- Python 3.9+
-- Node.js 16+
-- Rust 1.56+
-Quick Start
-bashCopy# Clone the repository
-git clone https://github.com/yourusername/digital-legacy-ai
-
-# Install dependencies
-cd digital-legacy-ai
-make install
-
-# Configure environment
-cp .env.example .env
-nano .env
-
-# Start local services
-make up
-
-# Run tests
-make test
-🔧 Configuration
-Environment Variables
-envCopy# AI Configuration
-MISTRAL_API_KEY=your_key_here
-ELEVEN_LABS_KEY=your_key_here
-LUMA_API_KEY=your_key_here
-
-# Blockchain Configuration
-ETH_NETWORK=mainnet
-EIGEN_LAYER_CONTRACT=0x...
-Database Setup
-bashCopy# Initialize vector database
-make init-db
-
-# Run migrations
-make migrate
-🔐 Security Features
-Data Protection
-
-End-to-end encryption for all stored data
-Zero-knowledge proof implementation
-Local-only sensitive data storage
-Hardware security module support
-
-Access Control
-
-Multi-factor authentication
-Role-based access control
-Biometric verification options
-Session management
+## Getting Started
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo-name/posthuman.git
