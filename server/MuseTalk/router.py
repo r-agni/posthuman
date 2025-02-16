@@ -31,7 +31,6 @@ async def generate_video(request: GenerateRequest):
     if not image_path or not text or not recipient_email:
         raise HTTPException(status_code=400, detail="Missing required parameters")
 
-    # Assuming main function is imported from main.py
     try:
         result_path = main(image_path, None, text, image_prompt, luma_api_key, elabs_api_key, result_dir, recipient_email)
         return {"message": "Video generated successfully", "result_path": result_path}
@@ -40,5 +39,5 @@ async def generate_video(request: GenerateRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=9357)
 

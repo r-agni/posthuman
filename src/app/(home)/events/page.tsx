@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { Clock, Plus, Mail, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,23 +22,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-const loadEvents = () => {
-  if (typeof window !== "undefined") {
-    try {
-      const storedEvents = localStorage.getItem("events");
-      if (storedEvents) {
-        return JSON.parse(storedEvents).map((event: any) => ({
-          ...event,
-          date: new Date(event.date),
-        }));
-      }
-    } catch (error) {
-      console.error("Error loading events:", error);
-    }
-  }
-  return [];
-};
 
 const loadContacts = () => {
   if (typeof window !== "undefined") {
@@ -60,36 +43,51 @@ export default function EventsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [contacts, setContacts] = useState<{ [key: string]: any }>({});
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [newEvent, setNewEvent] = useState({
     name: "",
+    person: "",
     email: "",
-    date: new Date(),
-    time: "",
-    description: "",
+    datetime: "",
+    message: "",
+    imagePath: "",
   });
 
   useEffect(() => {
-    setEvents(loadEvents());
-    setContacts(loadContacts());
+    fetchEvents();
+    const interval = setInterval(() => {
+      fetchEvents();
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (events.length > 0) {
-      localStorage.setItem("events", JSON.stringify(events));
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch("/api/events");
+      if (!response.ok) throw new Error("Failed to fetch events");
+      const data = await response.json();
+      setEvents(
+        data.map((event: any) => ({
+          ...event,
+          datetime: new Date(event.datetime),
+        }))
+      );
+    } catch (error) {
+      console.error("Error loading events:", error);
     }
-  }, [events]);
+  };
 
-  const selectedDateEvents = events.filter(
-    (event: any) =>
-      event.date.toDateString() === (date ? date.toDateString() : "")
-  );
+  useEffect(() => {
+    setContacts(loadContacts());
+  }, []);
 
   const validateForm = () => {
     let newErrors: { [key: string]: string } = {};
     if (!newEvent.name) newErrors.name = "Event name is required";
     if (!newEvent.email) newErrors.email = "Recipient email is required";
-    if (!newEvent.time) newErrors.time = "Time is required";
+    if (!newEvent.datetime) newErrors.time = "Time is required";
+    if (!imageFile) newErrors.image = "Image is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -101,45 +99,100 @@ export default function EventsPage() {
     return true;
   };
 
-  const handleAddEvent = () => {
+  const handleImageUpload = async () => {
+    if (!imageFile) return null;
+
+    const formData = new FormData();
+    formData.append("file", imageFile);
+
+    try {
+      const response = await fetch("/api/upload-pic", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Image upload failed");
+      const data = await response.json();
+      return data.filePath;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
+  };
+
+  const handleAddEvent = async () => {
     if (!validateForm()) return;
 
-    const [hours, minutes] = newEvent.time.split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-    const formattedTime = `${formattedHours}:${minutes
-      .toString()
-      .padStart(2, "0")} ${period}`;
+    const imagePath = await handleImageUpload();
+    if (!imagePath) return;
 
     const newEventObject = {
       id: Date.now(),
       name: newEvent.name,
+      person: newEvent.person || "",
       email: newEvent.email,
-      date: new Date(newEvent.date),
-      time: formattedTime,
-      description: newEvent.description || "No description provided",
+      datetime: new Date(newEvent.datetime).toISOString(),
+      message: newEvent.message || "No message provided",
+      imagePath,
     };
 
-    const updatedEvents = [...events, newEventObject];
-    setEvents(updatedEvents);
-    localStorage.setItem("events", JSON.stringify(updatedEvents));
+    try {
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEventObject),
+      });
+      if (!response.ok) throw new Error("Failed to add event");
+      setEvents((prev) => [...prev, newEventObject]);
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
 
     setNewEvent({
       name: "",
       email: "",
-      date: new Date(),
-      time: "",
-      description: "",
+      person: "",
+      datetime: "",
+      message: "",
+      imagePath: "",
     });
+    setImageFile(null);
     setErrors({});
     setIsDialogOpen(false);
   };
 
-  const handleDeleteEvent = (eventId: number) => {
-    const updatedEvents = events.filter((event: any) => event.id !== eventId);
-    setEvents(updatedEvents);
-    localStorage.setItem("events", JSON.stringify(updatedEvents));
+  const handleDeleteEvent = async (eventId: number) => {
+    try {
+      const response = await fetch("/api/events", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: eventId }),
+      });
+      if (!response.ok) throw new Error("Failed to delete event");
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
   };
+
+  const selectedDateEvents = events.filter((event) => {
+    const eventDateLocal = new Date(event.datetime).toLocaleDateString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }
+    );
+    const selectedDateLocal = date
+      ? date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+      : "";
+    return eventDateLocal === selectedDateLocal;
+  });
 
   return (
     <div className="min-h-screen relative">
@@ -162,12 +215,13 @@ export default function EventsPage() {
                   event: (day) =>
                     events.some(
                       (event: any) =>
-                        event.date.toDateString() === day.toDateString()
+                        new Date(event.date).toDateString() ===
+                        day.toDateString()
                     ),
                 }}
                 modifiersClassNames={{
                   event:
-                    "font-medium before:content-[''] before:absolute before:w-1.5 before:h-1.5 before:bg-[#93c57c] before:rounded-full before:top-1 before:left-1/2 before:-translate-x-1/2",
+                    "font-medium before:content-[''] before:absolute before:w-3.5 before:h-1 before:bg-[#93c57c] before:rounded-full before:translate-y-3 before:left-1/2 before:-translate-x-1/2",
                 }}
               />
             </CardContent>
@@ -176,10 +230,12 @@ export default function EventsPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
                 Events on{" "}
-                {date?.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                })}
+                {date
+                  ? new Date(date).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "No date selected"}
               </h2>
               <span className="text-sm text-gray-500">
                 {selectedDateEvents.length} event
@@ -200,26 +256,24 @@ export default function EventsPage() {
                             {event.name}
                           </h3>
                           <p className="text-sm text-white/90">
-                            {event.date.toLocaleDateString("en-US", {
+                            {new Date(event.datetime).toLocaleString("en-US", {
                               weekday: "long",
                               month: "long",
                               day: "numeric",
                               year: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
                             })}
                           </p>
+                          <div className="flex items-center text-sm mt-4 text-white">
+                            {event.email}
+                          </div>
                         </div>
                       </div>
                       <div className="p-4 space-y-3">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Clock className="w-4 h-4 mr-2 text-[#93c57c]" />
-                          {event.time}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Mail className="w-4 h-4 mr-2 text-[#93c57c]" />
-                          {event.email}
-                        </div>
-                        <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                          {event.description}
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {event.message}
                         </p>
                       </div>
                     </CardContent>
@@ -255,13 +309,18 @@ export default function EventsPage() {
                     <div>
                       <h3 className="text-xl font-semibold">{event.name}</h3>
                       <p className="text-sm text-white/90">
-                        {event.date.toLocaleDateString("en-US", {
-                          weekday: "long",
+                        {new Date(event.datetime).toLocaleTimeString("en-US", {
                           month: "long",
                           day: "numeric",
                           year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
                         })}
                       </p>
+                      <div className="flex items-center text-sm text-white mt-4">
+                        {event.email}
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDeleteEvent(event.id)}
@@ -271,16 +330,8 @@ export default function EventsPage() {
                     </button>
                   </div>
                   <div className="p-4 space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="w-4 h-4 mr-2 text-[#93c57c]" />
-                      {event.time}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Mail className="w-4 h-4 mr-2 text-[#93c57c]" />
-                      {event.email}
-                    </div>
-                    <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                      {event.description}
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {event.message}
                     </p>
                   </div>
                 </CardContent>
@@ -301,7 +352,7 @@ export default function EventsPage() {
             <DialogTitle>Add New Event</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div>
               <div className="space-y-2">
                 <Label htmlFor="name">
                   Event Name <span className="text-red-500">*</span>
@@ -315,28 +366,28 @@ export default function EventsPage() {
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="time">
-                  Time <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={newEvent.time}
-                  onChange={(e) =>
-                    setNewEvent({ ...newEvent, time: e.target.value })
-                  }
-                />
-              </div>
             </div>
             <div className="space-y-2">
-              <Label>Recipient *</Label>
+              <Label>Date & Time </Label>
+              <span className="text-red-500">*</span>
+              <Input
+                type="datetime-local"
+                value={newEvent.datetime}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, datetime: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Recipient </Label>
+              <span className="text-red-500">*</span>
               <Select
                 onValueChange={(value) => {
                   setNewEvent({
                     ...newEvent,
                     email:
                       value === "Other" ? "" : contacts[value]?.email || "",
+                    person: value === "Other" ? "" : value,
                   });
                 }}
               >
@@ -349,7 +400,6 @@ export default function EventsPage() {
                       {name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -370,24 +420,26 @@ export default function EventsPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label>
-                Date <span className="text-red-500">*</span>
+              <Label htmlFor="image">
+                Upload Image (JPG) <span className="text-red-500">*</span>
               </Label>
-              <Calendar
-                mode="single"
-                selected={newEvent.date}
-                onSelect={(date) => date && setNewEvent({ ...newEvent, date })}
-                className="rounded-md border flex justify-center mr-2"
+              <Input
+                id="image"
+                type="file"
+                accept="image/jpeg"
+                onChange={(e) =>
+                  setImageFile(e.target.files ? e.target.files[0] : null)
+                }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="message">Message</Label>
               <Textarea
-                id="description"
-                placeholder="Enter event description"
-                value={newEvent.description}
+                id="message"
+                placeholder="Enter event message"
+                value={newEvent.message}
                 onChange={(e) =>
-                  setNewEvent({ ...newEvent, description: e.target.value })
+                  setNewEvent({ ...newEvent, message: e.target.value })
                 }
                 className="h-24"
               />
