@@ -9,7 +9,7 @@ app = Flask(__name__)
 ELASTICSEARCH_URL = "https://my-elasticsearch-project-ee9815.es.us-east-1.aws.elastic.cloud:443"
 API_KEY = "SHhnOUNKVUJ3LThxak1XN2dPenQ6VDN2eElFTUFINmY0U3VJVjl1Z1B6Zw=="
 INDEX_NAME = "posthuman"
-TOP_K = 10
+TOP_K = 50
 
 es = Elasticsearch(ELASTICSEARCH_URL, api_key=API_KEY)
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -22,7 +22,7 @@ def retrieve_similar_texts(user_input, index=INDEX_NAME, top_k=TOP_K):
             "field": "embedding",
             "query_vector": query_vector,
             "k": top_k,
-            "num_candidates": 15,
+            "num_candidates": 65,
             "filter": { "exists": { "field": "embedding" } }
         }
     }
@@ -33,7 +33,7 @@ def retrieve_similar_texts(user_input, index=INDEX_NAME, top_k=TOP_K):
 def chat_with_ai(user_input):
     relevant_texts = retrieve_similar_texts(user_input)
     conversation_history = "\n".join([f"You: {user_input}\nMe: {text}" for text in relevant_texts])
-    prompt = f"""I am continuing this conversation in the user's texting style.\n\nPrevious messages:\n{conversation_history}\n\nNow, respond to this new message in the same tone:\n"You: {user_input}"\n\nMe:"""
+    prompt = f"""I am continuing this conversation in the user's texting style.\n\nPrevious messages:\n{conversation_history}\n\nNow, respond to this new message in the same tone, imagine this is a text conversation, keep responses brief and don't use too many emojis, you are Jeffrey:\nYou: {user_input}\n\nMe:"""
     
     response = ollama.chat(model="mistral", messages=[{"role": "user", "content": prompt}])
     return response["message"]["content"]
