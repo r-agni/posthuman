@@ -56,14 +56,14 @@ All data and analysis are stored locally for enhanced privacy. Sources include:
   - Mistral AI for interaction and context-based analysis.
   - ElevenLabs for voice replication.
   - Luma for video/image positioning.
-  - Muse Talk for lip synchronization.
+  - Langgraph for Agentic Workflows
+  - Scrappybara for agentic web browser based task automation.
 - **Databases**:
   - Elastic Vector Database for storing local data.
 - **Blockchain**:
   - Ethereum with EigenLayer for transaction validation and portfolio management.
-- **Automation**:
-  - Scrappybara for task automation.
-  - Perplexity Sonar API for real-time task execution.
+- **Full Stack**:
+  - Vercel v0: Frontend
 
 ---
 
