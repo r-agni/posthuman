@@ -1,10 +1,14 @@
+"use client";
+
 import { Sidebar } from "@/components/sidebar";
+import { useKeepCronAlive } from "@/hooks/cronjob";
 
 export default function SecondaryLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useKeepCronAlive();
   return (
     <div>
       <div className="flex h-screen bg-gray-50">

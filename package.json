@@ -31,6 +31,7 @@
     "framer-motion": "^12.4.3",
     "lucide-react": "^0.475.0",
     "next": "^15.1.7",
+    "node-cron": "^3.0.3",
     "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
