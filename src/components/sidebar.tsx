@@ -9,12 +9,14 @@ import {
   DollarSign,
   UserIcon,
   LogOut,
+  MessageCircle,
 } from "lucide-react";
 
 const categories = [
   { name: "Events", icon: CalendarDays, href: "/events" },
   { name: "Will", icon: BookOpenText, href: "/will" },
   { name: "Assets", icon: DollarSign, href: "/assets" },
+  { name: "Chat", icon: MessageCircle, href: "/chat" },
   { name: "Profile", icon: UserIcon, href: "/profile" },
 ];
 
