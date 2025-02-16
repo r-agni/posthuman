@@ -3,12 +3,21 @@ import pdfplumber
 import requests
 import json
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
 # Define Mistral API URL
 MISTRAL_LOCAL_URL = "http://localhost:11434/v1/chat/completions"
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Change this if needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Ensure an uploads directory exists
 UPLOAD_FOLDER = "uploads"
@@ -21,23 +30,26 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 def classify_financial_data(extracted_text):
-    """Send extracted PDF text to Mistral for financial analysis."""
+    """Send extracted PDF text to Mistral for financial analysis with enforced JSON output."""
     prompt = f"""
-    Extract and classify financial data from the following text:
+    Extract and classify financial data from the following text.
 
+    TEXT:
     {extracted_text}
 
-    Format the response as JSON:
+    Provide the response accurately and strictly in JSON format with the following structure:
     {{
       "accounts": [
         {{
-          "type": "Stocks" | "Bank Account" | "Cryptocurrency" | "Bonds" | "Real Estate" | "Other",
-          "institution": "Institution Name",
+          "type": "Stocks" | "Bank Account" | "Crypto" | "Bonds" | "Real Estate" | "Cash",
+          "company_name": "Fidelity" | "Charles Schwab" | "Coinbase" | "Vanguard" | "Other",
           "balance": 12345.67
         }}
       ],
       "total_assets": 123456.78
     }}
+
+    Do NOT include any explanations, extra text, or formatting outside this JSON.
     """
 
     payload = {

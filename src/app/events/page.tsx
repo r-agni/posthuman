@@ -40,11 +40,26 @@ const loadEvents = () => {
   return [];
 };
 
+const loadContacts = () => {
+  if (typeof window !== "undefined") {
+    try {
+      const storedContacts = localStorage.getItem("contacts");
+      if (storedContacts) {
+        return JSON.parse(storedContacts);
+      }
+    } catch (error) {
+      console.error("Error loading contacts:", error);
+    }
+  }
+  return {};
+};
+
 export default function EventsPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [contacts, setContacts] = useState<{ [key: string]: any }>({});
 
   const [newEvent, setNewEvent] = useState({
     name: "",
@@ -55,8 +70,8 @@ export default function EventsPage() {
   });
 
   useEffect(() => {
-    const storedEvents = loadEvents();
-    setEvents(storedEvents);
+    setEvents(loadEvents());
+    setContacts(loadContacts());
   }, []);
 
   useEffect(() => {
@@ -130,9 +145,9 @@ export default function EventsPage() {
     <div className="min-h-screen relative">
       <div className="max-w-7xl mx-auto px-8 py-6">
         <h1 className="text-4xl font-bold text-gray-900">
-          Welcome, Henry Rollins!
+          Welcome, Jeffrey Gong!
         </h1>
-        <p className="text-lg text-gray-600">Schedule your timely events.</p>
+        <p className="text-lg text-gray-600">Schedule memorable events.</p>
       </div>
       <div className="max-w-7xl mx-auto p-8 space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12">
@@ -315,14 +330,13 @@ export default function EventsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>
-                Recipient <span className="text-red-500">*</span>
-              </Label>
+              <Label>Recipient *</Label>
               <Select
                 onValueChange={(value) => {
                   setNewEvent({
                     ...newEvent,
-                    email: value === "Other" ? "" : value,
+                    email:
+                      value === "Other" ? "" : contacts[value]?.email || "",
                   });
                 }}
               >
@@ -330,13 +344,12 @@ export default function EventsPage() {
                   <SelectValue placeholder="Select Recipient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Jathin", "Jeffrey", "Shivansh", "Agni", "Other"].map(
-                    (recipient) => (
-                      <SelectItem key={recipient} value={recipient}>
-                        {recipient}
-                      </SelectItem>
-                    )
-                  )}
+                  {Object.keys(contacts).map((name) => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +19,19 @@ import {
 type Subscription = {
   id: string;
   name: string;
-  icon: React.ReactNode;
+  icon: string;
   link: string;
   login: string;
   password: string;
+};
+
+const LOCAL_STORAGE_KEY = "subscriptionsData";
+
+const iconMap: Record<string, React.ReactNode> = {
+  newspaper: <Newspaper className="h-5 w-5" />,
+  film: <Film className="h-5 w-5" />,
+  music: <Music className="h-5 w-5" />,
+  shoppingBag: <ShoppingBag className="h-5 w-5" />,
 };
 
 const SubscriptionItem = ({
@@ -43,24 +51,38 @@ const SubscriptionItem = ({
     value: string
   ) => void;
 }) => (
-  <Card className="mb-4 overflow-hidden">
+  <Card className="mb-4 overflow-hidden relative">
+    <Button
+      variant="ghost"
+      size="icon"
+      className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
+      onClick={() => onCancel(subscription.id)}
+    >
+      <X className="h-5 w-5" />
+    </Button>
+
     <CardContent className="p-0">
-      <div
-        className="flex items-center justify-between p-6 cursor-pointer"
-        onClick={onToggle}
-      >
-        <div className="flex items-center">
-          <div className="bg-primary/10 p-3 rounded-full mr-4">
-            {subscription.icon}
+      <div className="flex items-center justify-between p-6">
+        <div className="flex items-center space-x-3">
+          <div className="bg-primary/10 p-3 rounded-full">
+            {iconMap[subscription.icon] || <Plus className="h-5 w-5" />}
           </div>
-          <span className="text-lg font-medium">{subscription.name}</span>
+          <span className="text-md font-medium">{subscription.name}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-500 hover:text-gray-800"
+            onClick={onToggle}
+          >
+            {isExpanded ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </Button>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="h-6 w-6" />
-        ) : (
-          <ChevronDown className="h-6 w-6" />
-        )}
       </div>
+
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
           isExpanded ? "max-h-96" : "max-h-0"
@@ -89,12 +111,6 @@ const SubscriptionItem = ({
               }
             />
           </div>
-          <Button
-            variant="destructive"
-            onClick={() => onCancel(subscription.id)}
-          >
-            <X className="h-4 w-4 mr-2" /> Cancel Subscription
-          </Button>
         </div>
       </div>
     </CardContent>
@@ -102,49 +118,33 @@ const SubscriptionItem = ({
 );
 
 export default function SubscriptionPage() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([
-    {
-      id: "1",
-      name: "New York Times",
-      icon: <Newspaper className="h-6 w-6" />,
-      link: "",
-      login: "",
-      password: "",
-    },
-    {
-      id: "2",
-      name: "Netflix",
-      icon: <Film className="h-6 w-6" />,
-      link: "",
-      login: "",
-      password: "",
-    },
-    {
-      id: "3",
-      name: "Spotify",
-      icon: <Music className="h-6 w-6" />,
-      link: "",
-      login: "",
-      password: "",
-    },
-    {
-      id: "4",
-      name: "DashPass",
-      icon: <ShoppingBag className="h-6 w-6" />,
-      link: "",
-      login: "",
-      password: "",
-    },
-  ]);
-
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [newSubscription, setNewSubscription] = useState({
     name: "",
     link: "",
     login: "",
     password: "",
+    icon: "plus",
   });
   const [isAddingNew, setIsAddingNew] = useState(false);
+
+  useEffect(() => {
+    const savedSubscriptions = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedSubscriptions) {
+      try {
+        setSubscriptions(JSON.parse(savedSubscriptions));
+      } catch (error) {
+        console.error("Error parsing subscriptions from local storage:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (subscriptions.length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(subscriptions));
+    }
+  }, [subscriptions]);
 
   const handleToggle = (id: string) => {
     setExpandedIds((prev) =>
@@ -153,8 +153,12 @@ export default function SubscriptionPage() {
   };
 
   const handleCancel = (id: string) => {
-    setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
-    setExpandedIds((prev) => prev.filter((i) => i !== id));
+    const updatedSubscriptions = subscriptions.filter((sub) => sub.id !== id);
+    setSubscriptions(updatedSubscriptions);
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify(updatedSubscriptions)
+    );
   };
 
   const handleUpdate = (
@@ -162,40 +166,54 @@ export default function SubscriptionPage() {
     field: "link" | "login" | "password",
     value: string
   ) => {
-    setSubscriptions(
-      subscriptions.map((sub) =>
-        sub.id === id ? { ...sub, [field]: value } : sub
-      )
+    const updatedSubscriptions = subscriptions.map((sub) =>
+      sub.id === id ? { ...sub, [field]: value } : sub
+    );
+    setSubscriptions(updatedSubscriptions);
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify(updatedSubscriptions)
     );
   };
 
   const handleAddSubscription = () => {
-    if (newSubscription.name) {
-      const newId = (subscriptions.length + 1).toString();
-      setSubscriptions([
-        ...subscriptions,
-        {
-          id: newId,
-          name: newSubscription.name,
-          icon: <Plus className="h-6 w-6" />,
-          link: newSubscription.link,
-          login: newSubscription.login,
-          password: newSubscription.password,
-        },
-      ]);
-      setNewSubscription({ name: "", link: "", login: "", password: "" });
+    if (newSubscription.name.trim()) {
+      const newId = crypto.randomUUID();
+      const newSub = {
+        id: newId,
+        name: newSubscription.name.trim(),
+        icon: newSubscription.icon,
+        link: newSubscription.link.trim(),
+        login: newSubscription.login.trim(),
+        password: newSubscription.password.trim(),
+      };
+      const updatedSubscriptions = [...subscriptions, newSub];
+      setSubscriptions(updatedSubscriptions);
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify(updatedSubscriptions)
+      );
+
+      setNewSubscription({
+        name: "",
+        link: "",
+        login: "",
+        password: "",
+        icon: "newspaper",
+      });
       setIsAddingNew(false);
       setExpandedIds((prev) => [...prev, newId]);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Subscriptions</h1>
-      <p className="text-lg font-normal mb-8">
-        Manage your subscription information.
-      </p>
-
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Subscriptions</h1>
+        <p className="text-md text-gray-600 mt-2">
+          Manage your recurring subscriptions.
+        </p>
+      </div>
       <div className="space-y-4">
         {subscriptions.map((subscription) => (
           <SubscriptionItem
@@ -259,24 +277,16 @@ export default function SubscriptionPage() {
                   }
                 />
               </div>
-              <div className="flex gap-4">
-                <Button onClick={handleAddSubscription} className="flex-1">
-                  <Plus className="h-4 w-4 mr-2" /> Add Subscription
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAddingNew(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
+              <Button onClick={handleAddSubscription}>Add Subscription</Button>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Button onClick={() => setIsAddingNew(true)} className="mt-8 w-full">
-          <Plus className="h-4 w-4 mr-2" /> Add New Subscription
+        <Button
+          onClick={() => setIsAddingNew(true)}
+          className="w-48 rounded-xl"
+        >
+          <Plus className="h-4 w-4 mr-2" /> Add Subscription
         </Button>
       )}
     </div>

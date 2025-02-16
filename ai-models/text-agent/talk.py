@@ -49,4 +49,4 @@ def chat():
     return jsonify({"message": ai_response})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=7325, debug=True)

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,6 +11,7 @@ import {
   MessageCircle,
   Bell,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const categories = [
   { name: "Events", icon: CalendarDays, href: "/events" },
@@ -23,7 +23,7 @@ const categories = [
 ];
 
 export function Sidebar() {
-  const [selectedCategory, setSelectedCategory] = useState("Events");
+  const pathname = usePathname();
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-6 flex flex-col h-screen">
@@ -42,10 +42,9 @@ export function Sidebar() {
           <Link
             key={category.name}
             href={category.href}
-            onClick={() => setSelectedCategory(category.name)}
             className={`flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition-colors
               ${
-                selectedCategory === category.name
+                pathname === category.href
                   ? "bg-[#93c57c] text-white"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
