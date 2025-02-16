@@ -42,3 +42,12 @@ next-env.d.ts
 
 # ai-models
 ai-models/.venv
+
+# server
+server/.env
+server/venv/
+server/MuseTalk/data
+server/MuseTalk/models
+server/MuseTalk/results
+server/MuseTalk/assets
+server/MuseTalk/videos
