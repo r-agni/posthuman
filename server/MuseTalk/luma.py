@@ -69,6 +69,8 @@ def generate_double_video(image_file, prompt, api_key):
     print("Joining videos to create a smooth 10-second video...")
     join_videos([first_video, second_video], output_video)
     print(f"Double video generated and saved as {output_video}")
+    
+    return output_video
 
 def generate_triple_video(image_file, prompt, api_key):
     print("Generating first 5-second video...")
@@ -104,6 +106,9 @@ def generate_triple_video(image_file, prompt, api_key):
     print("Joining videos to create a smooth 15-second video...")
     join_videos([first_video, second_video, third_video], output_video)
     print(f"Triple video generated and saved as {output_video}")
+
+    return output_video
+
 
 if __name__ == "__main__":
     load_dotenv(dotenv_path="/Users/shivanshsoni/Desktop/posthuman/server/MuseTalk/.env")

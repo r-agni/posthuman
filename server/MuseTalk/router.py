@@ -20,10 +20,6 @@ class GenerateRequest(BaseModel):
 async def read_root():
     return {"message": "Welcome to MuseTalk API"}
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id, "message": "Item details"}
-
 @app.post("/generate")
 async def generate_video(request: GenerateRequest):
     image_path = request.image_path

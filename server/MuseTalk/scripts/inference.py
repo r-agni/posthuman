@@ -35,6 +35,11 @@ def main(args):
         audio_path = inference_config[task_id]["audio_path"]
         bbox_shift = inference_config[task_id].get("bbox_shift", args.bbox_shift)
 
+        print(f"Processing task {task_id}")
+        print(f"Video path: {video_path}")
+        print(f"Audio path: {audio_path}")
+        print(f"Bbox shift: {bbox_shift}")
+
         input_basename = os.path.basename(video_path).split('.')[0]
         audio_basename  = os.path.basename(audio_path).split('.')[0]
         output_basename = f"{input_basename}_{audio_basename}"
@@ -51,6 +56,7 @@ def main(args):
             save_dir_full = os.path.join(args.result_dir, input_basename)
             os.makedirs(save_dir_full,exist_ok = True)
             cmd = f"ffmpeg -v fatal -i {video_path} -start_number 0 {save_dir_full}/%08d.png"
+            print(f"Extracting frames with command: {cmd}")
             os.system(cmd)
             input_img_list = sorted(glob.glob(os.path.join(save_dir_full, '*.[jpJP][pnPN]*[gG]')))
             fps = get_video_fps(video_path)
@@ -64,10 +70,13 @@ def main(args):
         else:
             raise ValueError(f"{video_path} should be a video file, an image file or a directory of images")
 
+        print(f"Number of input images: {len(input_img_list)}")
+        print(f"FPS: {fps}")
         #print(input_img_list)
         ############################################## extract audio feature ##############################################
         whisper_feature = audio_processor.audio2feat(audio_path)
         whisper_chunks = audio_processor.feature2chunks(feature_array=whisper_feature,fps=fps)
+        print(f"Number of whisper chunks: {len(whisper_chunks)}")
         ############################################## preprocess input image  ##############################################
         if os.path.exists(crop_coord_save_path) and args.use_saved_coord:
             print("using extracted coordinates")
@@ -79,18 +88,31 @@ def main(args):
             coord_list, frame_list = get_landmark_and_bbox(input_img_list, bbox_shift)
             with open(crop_coord_save_path, 'wb') as f:
                 pickle.dump(coord_list, f)
+
+        print(f"Number of frames: {len(frame_list)}")
+        print(f"Number of coordinates: {len(coord_list)}")
                 
         i = 0
         input_latent_list = []
         for bbox, frame in zip(coord_list, frame_list):
             if bbox == coord_placeholder:
+                print(f"Skipping frame {i} due to placeholder bbox")
                 continue
             x1, y1, x2, y2 = bbox
+            print(f"Frame {i} bbox: {bbox}")
             crop_frame = frame[y1:y2, x1:x2]
-            crop_frame = cv2.resize(crop_frame,(256,256),interpolation = cv2.INTER_LANCZOS4)
+            print(f"Crop frame shape before resize: {crop_frame.shape}")
+            try:
+                crop_frame = cv2.resize(crop_frame,(256,256),interpolation = cv2.INTER_LANCZOS4)
+                print(f"Crop frame shape after resize: {crop_frame.shape}")
+            except Exception as e:
+                print(f"Error resizing frame {i}: {e}")
+                continue
             latents = vae.get_latents_for_unet(crop_frame)
             input_latent_list.append(latents)
-    
+
+        print(f"Number of input latents: {len(input_latent_list)}")
+
         # to smooth the first and the last frame
         frame_list_cycle = frame_list + frame_list[::-1]
         coord_list_cycle = coord_list + coord_list[::-1]

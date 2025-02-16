@@ -5,7 +5,7 @@ import argparse
 from omegaconf import OmegaConf
 import torch
 from dotenv import load_dotenv
-# from utils import send_email_with_attachment
+from utils import send_email_with_attachment, get_duration_wave
 
 ffmpeg_path, _ = run.get_or_fetch_platform_executables_else_raise()
 os.environ['FFMPEG_PATH'] = ffmpeg_path
@@ -60,22 +60,30 @@ def run_musetalk(video_path, audio_path, result_dir='./results', bbox_shift=0, f
     output_basename = f"{os.path.basename(video_path).split('.')[0]}_{os.path.basename(audio_path).split('.')[0]}"
     return os.path.join(result_dir, f"{output_basename}.mp4")
 
-def main(image_path, voice_sample_path, text, image_prompt, luma_api_key, elevenlabs_api_key, result_dir='./results', recipient_email=None):
-    video_path = generate_video(image_path, image_prompt, luma_api_key)
-
+def main(image_path, voice_sample_path, text, image_prompt, luma_api_key, elevenlabs_api_key, recipient_email, result_dir='./results'):
     voice_id = "CkVOwuK94BHPOuKUR76m"
     if voice_id:
         audio_path = generate_audio(voice_id, text, elevenlabs_api_key)
+        audio_length = get_duration_wave(audio_path)
     else:
         raise Exception("Voice cloning failed")
+    
+    # video_path = generate_video(image_path, image_prompt, luma_api_key)
+
+    if (audio_length / 5) <= 1.0:
+        video_path = generate_video(image_path, image_prompt, luma_api_key)
+    elif (audio_length / 5) <= 2.0:
+        video_path = generate_double_video(image_path, image_prompt, luma_api_key)
+    else:
+        video_path = generate_triple_video(image_path, image_prompt, luma_api_key)
+
 
     result_path = run_musetalk(video_path, audio_path, result_dir, bbox_shift=-10)
 
     if recipient_email:
-        sender_email = "myposthuman@gmail.com"
-        subject = "Your MuseTalk Video"
-        body = "Please find attached the MuseTalk generated video."
-        # send_email_with_attachment(sender_email, recipient_email, subject, body, result_path)
+        subject = "Posthuman - A Message from Someone Close to You"
+        body = "Please find attached the video."
+        send_email_with_attachment(recipient_email, subject, body, result_path)
 
     return result_path
 
@@ -84,12 +92,12 @@ if __name__ == "__main__":
     luma_api_key = os.getenv("LUMAAI_API_KEY")
     elabs_api_key = os.getenv("ELEVENLABS_API_KEY")
 
-    image_path = "/Users/shivanshsoni/Desktop/posthuman/server/assets/jeffrey.JPG"
+    image_path = "/Users/shivanshsoni/Documents/GitHub/posthuman/server/assets/jeffreyTwo.JPG"
     voice_sample_path = "/Users/shivanshsoni/Desktop/posthuman/server/jeffrey_audio/sample.mp3"
     text = "Happy Birthday Son. I love you so much. I hope you have a great day."
     image_prompt = ("Still shot of person's face showing an expression of love and care. Their body is not moving. Face very slightly.")
     result_dir = "./results"
     recipient_email = "shivanshmsoni@gmail.com"
 
-    result = main(image_path, voice_sample_path, text, image_prompt, luma_api_key, elabs_api_key, result_dir, recipient_email)
+    result = main(image_path, voice_sample_path, text, image_prompt, luma_api_key, elabs_api_key, recipient_email, result_dir)
     print(f"MuseTalk inference completed. Final output video saved at: {result}")
