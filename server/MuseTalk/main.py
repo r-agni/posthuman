@@ -5,7 +5,7 @@ import argparse
 from omegaconf import OmegaConf
 import torch
 from dotenv import load_dotenv
-from utils import send_email_with_attachment
+# from utils import send_email_with_attachment
 
 ffmpeg_path, _ = run.get_or_fetch_platform_executables_else_raise()
 os.environ['FFMPEG_PATH'] = ffmpeg_path
@@ -75,7 +75,7 @@ def main(image_path, voice_sample_path, text, image_prompt, luma_api_key, eleven
         sender_email = "myposthuman@gmail.com"
         subject = "Your MuseTalk Video"
         body = "Please find attached the MuseTalk generated video."
-        send_email_with_attachment(sender_email, recipient_email, subject, body, result_path)
+        # send_email_with_attachment(sender_email, recipient_email, subject, body, result_path)
 
     return result_path
 
