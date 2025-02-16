@@ -9,7 +9,9 @@ interface Message {
   content: string;
 }
 
-const LOCAL_STORAGE_KEY = "chatHistoryChat";
+const LOCAL_STORAGE_KEY = "chatHistory";
+const OPENAI_API_KEY =
+  "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";
 
 export default function ChatBox() {
   const [userInput, setUserInput] = useState("");
@@ -40,21 +42,32 @@ export default function ChatBox() {
     setIsTyping(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: userInput,
-          history: messages
-            .map(
-              (msg) => `${msg.role === "user" ? "You" : "AI"}: ${msg.content}`
-            )
-            .join("\n"),
-        }),
-      });
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${OPENAI_API_KEY}`, // Use the OpenAI API key for authorization
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo", // Specify the model you want to use
+            messages: [
+              { role: "user", content: userInput },
+              ...messages.map((msg) => ({
+                role: msg.role,
+                content: msg.content,
+              })),
+            ],
+          }),
+        }
+      );
 
       const data = await response.json();
-      const newAiMessage: Message = { role: "ai", content: data.response };
+      const newAiMessage: Message = {
+        role: "ai",
+        content: data.choices[0].message.content,
+      }; // Adjusted to match OpenAI response structure
       setMessages((prev) => [...prev, newAiMessage]);
     } catch (error) {
       console.error("Error fetching AI response:", error);
@@ -86,7 +99,9 @@ export default function ChatBox() {
             <UserIcon className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Jeffrey Gong</h1>
+            <h1 className="text-lg font-bold text-gray-900">
+              Send Crypto with Open AI
+            </h1>
           </div>
         </div>
       </div>

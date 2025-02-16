@@ -9,6 +9,7 @@ import {
   UserIcon,
   MessageCircle,
   Bell,
+  Send,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -19,6 +20,7 @@ const categories = [
   { name: "Subscriptions", icon: Bell, href: "/subscriptions" },
   { name: "Chat", icon: MessageCircle, href: "/chat" },
   { name: "Profile", icon: UserIcon, href: "/profile" },
+  { name: "Send Finances", icon: Send, href: "/finances" },
 ];
 
 export function Sidebar() {
