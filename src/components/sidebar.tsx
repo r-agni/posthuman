@@ -7,7 +7,6 @@ import {
   CalendarDays,
   DollarSign,
   UserIcon,
-  LogOut,
   MessageCircle,
   Bell,
 } from "lucide-react";
