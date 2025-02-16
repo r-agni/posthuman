@@ -10,12 +10,14 @@ import {
   UserIcon,
   LogOut,
   MessageCircle,
+  Bell,
 } from "lucide-react";
 
 const categories = [
   { name: "Events", icon: CalendarDays, href: "/events" },
   { name: "Will", icon: BookOpenText, href: "/will" },
   { name: "Assets", icon: DollarSign, href: "/assets" },
+  { name: "Subscriptions", icon: Bell, href: "/subscriptions" },
   { name: "Chat", icon: MessageCircle, href: "/chat" },
   { name: "Profile", icon: UserIcon, href: "/profile" },
 ];
